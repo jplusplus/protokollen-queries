@@ -342,7 +342,7 @@ XGET documents/info/_search
     },
     "query": {
         "filtered" : {
-            filter: {
+            "filter": {
                 "and" : [
                     {
                         "or": [
