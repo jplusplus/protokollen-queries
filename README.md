@@ -5,7 +5,7 @@ This is a place for sharing useful ElasticSearch queries on [the ProtoCollection
  * [`municipalities.md`](https://github.com/jplusplus/protokollen-queries/blob/master/municipalities.md) contains useful selections of municipalities.
 
 Database layout
-===============
+---------------
 
 The database consists of two indexes: `files` and `documents`. Files contains an index of, well, files. Documents are extracted from files. A document is typically an agenda, an attachment, or the meeting minutes from a meeting.
 
