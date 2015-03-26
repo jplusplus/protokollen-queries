@@ -1,0 +1,464 @@
+{"""Meta data"""}
+XGET files/info/_search
+XGET documents/info/_search
+
+XGET files/_mapping
+XGET documents/_mapping
+
+XGET files/_settings
+XGET documents/_settings
+
+{"""Recent files"""}
+GET files/info/_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    {
+      "last_updated": {
+        "order": "desc"
+      }
+    }
+  ]
+}
+
+{"""Recent protocols"""}
+GET documents/info/_search
+{
+   "_source": {
+        "exclude": [ "text" ]
+    },
+  "query": {
+    "term": {
+        "document_type": "kommunstyrelseprotokoll"
+    }
+  },
+  "sort": [
+    {
+      "last_updated": {
+        "order": "desc"
+      }
+    }
+  ]
+}
+
+{"""Search for software"""}
+GET files/info/_search
+{
+    "size" : 50,
+    "query": {
+        "query_string": {
+          "query": "xp",
+          "fields": ["metadata.software"]
+        }
+    }
+}
+
+{"""Number of files that are converted to documents"""}
+XGET documents/info/_search
+{
+    "size":0,
+    "aggs" : {
+        "files" : {
+            "cardinality" : {
+                "field" : "file"
+            }
+        }
+    }
+}
+
+{"""Downloaded files per municipality and filetype"""}
+XGET files/info/_search
+{
+    "size":0,
+    "aggs" : {
+        "files" : {
+            "terms" : {
+                "field" : "municipality",
+                "size": 290
+        },
+            "aggs" : {
+                "types_" : {
+                    "terms" : {
+                        "field" : "file_type"
+                    }
+                }
+            }
+        }
+    }
+}
+
+{"""Downloads per filetype (working even for old files where filetype wasn't set)"""}
+XGET files/info/_search
+{
+    "size":0,
+    "aggs" : {
+        "pdf" : {
+            "filter" : {
+                "query" : {
+                    "wildcard": {
+                        "_uid": "*.pdf"
+                    }
+                }
+            }
+        },
+        "doc" : {
+            "filter" : {
+                "query" : {
+                    "wildcard": {
+                        "_uid": "*.doc"
+                    }
+                }
+            }
+        },
+        "docx" : {
+            "filter" : {
+                "query" : {
+                    "wildcard": {
+                        "_uid" : "*.docx"
+                    }
+                }
+            }
+        },
+        "rtf" : {
+            "filter" : {
+                "query" : {
+                    "wildcard": {
+                       "_uid" : "*.rtf"
+                    }
+                }
+            }
+        },
+        "html" : {
+            "filter" : {
+                "query" : {
+                    "wildcard": {
+                       "_uid": "*.html"
+                    }
+                }
+            }
+        }
+    }
+}
+
+{"""Find a term, per year"""}
+XGET documents/info/_search
+{
+    "size": 0,
+    "query": {
+        "bool" : {
+            "must" : {
+                "match" : {
+                    "text" : {
+                        "query": ["diarr"],
+                        "type" : "phrase_prefix"
+                    }
+                }
+            }
+        }
+    },
+    "aggs" : {
+        "docs_over_time" : {
+            "date_histogram" : {
+                "field" : "meeting_date",
+                "interval" : "year"
+            }
+        }
+    }
+}
+
+{"""Term per year, for a subset of municipalities"""}
+XGET documents/info/_search
+{
+    "size": 0,
+    "query": {
+        "bool" : {
+            "must" : {
+                "match" : {
+                    "text" : {
+                        "query": ["gamla"],
+                        "type" : "phrase_prefix"
+                    }
+                }
+            },
+            "must" : {
+                "terms" : {
+                    "origin" : ["Dals-Eds kommun", "Torsby kommun", "Årjängs kommun", "Vansbro kommun", "Nordanstigs kommun", "Ljusdals kommun", "Ånge kommun", "Sollefteå kommun", "Ragunda kommun", "Bräcke kommun", "Strömsunds kommun", "Nordmalings kommun", "Vindelns kommun", "Robertsfors kommun", "Sorsele kommun", "Vilhelmina kommun", "Åsele kommun", "Överkalix kommun", "Övertorneå kommun", "Pajala kommun"]
+                }
+            }
+        }
+    },
+    "aggs" : {
+        "docs_over_time" : {
+            "date_histogram" : {
+                "field" : "meeting_date",
+                "interval" : "year"
+            }
+        }
+    }
+}
+
+{"""Term for a subset of municipalities"""}
+XGET documents/info/_search
+{
+    "size": 0,
+    "query": {
+        "bool" : {
+            "must" : {
+                "match" : {
+                    "text" : {
+                        "query": ["miljö"],
+                        "type" : "phrase_prefix"
+                    }
+                }
+            },
+            "must" : {
+                "terms" : {
+                    "origin" :["Enköpings kommun", "Flens kommun", "Katrineholms kommun", "Kinda kommun", "Motala kommun", "Mjölby kommun", "Nässjö kommun", "Eksjö kommun", "Älmhults kommun", "Västerviks kommun", "Ronneby kommun", "Karlshamns kommun", "Sölvesborgs kommun", "Landskrona kommun", "Ystads kommun", "Simrishamns kommun", "Laholms kommun", "Falkenbergs kommun", "Karlsborgs kommun", "Melleruds kommun", "Marks kommun", "Svenljunga kommun", "Ulricehamns kommun", "Åmåls kommun", "Mariestads kommun", "Lidköpings kommun", "Skara kommun", "Falköpings kommun", "Kristinehamns kommun", "Säffle kommun", "Hällefors kommun", "Sala kommun", "Leksands kommun", "Borlänge kommun", "Hedemora kommun"]
+
+                }
+            }
+        }
+    }
+}
+
+{"""Number of files, for a subset of municipalities"""}
+XGET files/info/_search
+{
+    "size": 0,
+    "query": {
+        "terms" : {
+            "municipality" :["Stockholms kommun", "Malmö kommun", "Göteborgs kommun"]
+
+            }
+        }
+    }
+}
+
+{"""Documents per year"""}
+XGET documents/info/_search
+{
+    "size": 0,
+    "aggs" : {
+        "docs_over_time" : {
+            "date_histogram" : {
+                "field" : "meeting_date",
+                "interval" : "year"
+            }
+        }
+    }
+}
+
+
+{"""All meetings from a municipality"""}
+XGET documents/info/_search
+{
+    "size":0,
+    "aggs" : {
+        "meetings" : {
+            "filter" : {
+                "and" : [
+                    {
+                        "term" : { "document_type":  "kommunstyrelseprotokoll" }
+                    },
+                    {
+                        "term" : { "origin":  "Östersunds kommun" }
+                    }
+                ]
+            },
+            "aggs" : {
+                "municipalities" : {
+                    "terms" : {
+                        "field" : "meeting_date"
+                    }
+                }
+            }
+        }
+    }
+}
+
+{"""All meetings"""}
+XGET documents/info/_search
+{
+    "size":0,
+    "aggs" : {
+        "meetings" : {
+            "filter" : {
+                "term" : {
+                    "document_type":  "kommunstyrelseprotokoll"
+                }
+            },
+            "aggs" : {
+                "date" : {
+                    "terms" : {
+                        "field" : "meeting_date"
+                    },
+                    "aggs" : {
+                        "municipality" : {
+                            "terms" : {
+                                "field" : "origin"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+{"""Search by date interval"""}
+XGET documents/info/_search
+{
+    "query": {
+        "filtered" : {
+            "filter" : {
+                "and" : [
+                     {
+                        "term" : { "origin" :  "Aneby kommun" }
+                    },
+                    {
+                        "term" : { "document_type" :  "kommunstyrelseprotokoll" }
+                    },
+                    {
+                        "range" : {
+                            "meeting_date" : {
+                                "gte": "2014-01-01",
+                                "lte": "now"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
+
+{"""Protocols with wrong date (too late or too early)"""}
+XGET documents/info/_search
+{
+    "_source": {
+        "exclude": [ "text" ]
+    },
+    "query": {
+        "filtered" : {
+            filter: {
+                "and" : [
+                    {
+                        "or": [
+                            {
+                                "range" : {
+                                    "meeting_date" : {
+                                        "lte": "1994-01-01"
+                                    }
+                                }
+                            },
+                            {
+                                "range" : {
+                                    "meeting_date" : {
+                                        "gte": "now"
+                                    }
+                                }
+                            }                    
+                        ]
+                    },
+                    {
+                            "term": {
+                                "document_type": "kommunstyrelseprotokoll"
+                            }
+                    }
+                ]
+            }
+        }
+    }
+}
+
+{"""Search for text"""}
+XGET documents/info/_search
+{
+    "query": {
+        "term" : { "text" :  "födelsedag"}
+    }
+}
+
+{"""Search or text in header"""}
+XGET documents/info/_search
+{
+    "query": {
+        "term" : { "header" :  "januari"}
+    }
+}
+
+{"""Search for an exact phrase"""}
+XGET documents/info/_search
+{
+    "query": {
+        "bool": {
+            "must": [
+                {
+                    "prefix": {
+                        "text": "ensamkommande"
+                    }
+                },
+                {
+                    "match": {
+                        "text": "barn"
+                    }
+                }
+            ]
+        }
+    }
+}
+
+{"""Find by id"""}
+XGET files/info/_search
+{
+    "query": {
+        "term" : { "_id" :  "Arvika kommun-25e200490eb9f3179759e52c612a6c10.pdf" }
+    }
+}
+
+{"""word cloud"""}
+XGET documents/info/_search
+{
+    "size" : 0,
+    "query": {
+        "terms" : {
+            "origin" : ["Dals-Eds kommun", "Torsby kommun", "Årjängs kommun", "Vansbro kommun", "Nordanstigs kommun", "Ljusdals kommun", "Ånge kommun", "Sollefteå kommun", "Ragunda kommun", "Bräcke kommun", "Strömsunds kommun", "Nordmalings kommun", "Vindelns kommun", "Robertsfors kommun", "Sorsele kommun", "Vilhelmina kommun", "Åsele kommun", "Överkalix kommun", "Övertorneå kommun", "Pajala kommun"]
+        }
+    },
+    "facets" : {
+        "tagcloud" : {
+            "terms" : {
+                "all_terms" : true,
+                "size" : 1000,
+                "field" : "text",
+                "exclude": ["alla", "allt", "alltså", "andra", "att", "av", "bara", "bli", "blir", "beslut", "borde", "bra", "mitt", "ser", "dem", "den", "denna", "de", "det", "detta", "dig", "din", "dock", "dom", "där", "en", "enligt", "efter", "eftersom", "eller", "ett", "fast", "fel", "fick", "finns", "fram", "från", "får", "fått", "för","förslag", "första", "genom", "ger", "går", "gör", "göra", "hade", "han", "har", "hela", "helt", "honom", "hur", "här", "i", "igen", "ingen", "inget", "inte", "jag", "kan", "kanske", "kommer", "lika", "lite", "man", "med", "men", "mer", "mig", "min", "mot", "mycket", "många", "måste", "nog", "när", "någon", "något", "några", "nån", "nåt", "och", "om", "också", "på",  "rätt", "samma", "samt", "sedan", "sen", "sig", "sin", "själv", "ska", "skulle", "som", "sätt", "tar", "till", "tror", "tycker", "typ", "under", "upp", "ut", "utan", "vad", "var", "vara", "vet", "vid", "vilket", "vill", "väl", "även", "är", "över", "kommunstyrelsen","kommunstyrelsens", "kommunfullmäktige", "kommun", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "v", "s", "mp", "fp", "c", "kd", "m", "sd", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23","24","25","26","27","28","29", "30", "31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","60","70","80","90","100", "200","300","400","500","600","700","800","900","01", "02", "03", "04", "05", "06", "07", "08", "09","2006","2007", "2008","2009", "2010", "2011", "2012", "2013", "2014", "2015", "föreslår", "sammanträdesprotokoll", "utdragsbestyrkande", "ordförande", "inom", "år", "beslutar", "övriga", "följande", "dnr", "tid", "kommunens","kommunen","plats","ärendet","protokoll","per","del","sida","ks","dessa","underskrift","ersättare","besluta","nya","protokollet","så", "uppdrag","mellan","kl","ab","ny","tidigare","ta","sammanträdesdatum","anslag","in","gäller","då","innebär","sammanträde","enlighet","kommuner","ej", "avseende","kommunfullmäktiges", "bör","få","sekreterare", "tas", "två", "förslaget","information","kunna","gällande","utses","beslutet","000","åtgärder", "ordföranden","ha","bilaga","justera","beslutande","utifrån", "tillsammans","verksamhet","yttrande","verksamheten","se", "bifall","a","justerandes","olika","än","respektive","samtliga","skall", "ge", "vidare", "sitt", "nu", "kommunala", "sker", "redovisning", "godkänna", "e", "kronor", "redovisas", "ställer", "plan", "därför", "sign", "möjlighet", "januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december","beslutade", "kr", "vi", "ledamöter", "ytterligare", "annat", "skrivelse", "inför", "ansökan", "nilsson","varje", "tre", "ske", "50", "ur", "vissa", "nytt", "nuvarande","års","nr", "yrkande", "idag", "ärende", "anledning", "senast", "paragrafer", "sina", "grund", "varit", "ca", "tillkännagivits", "föreslås", "bland", "frågan", "datum", "beslutat", "vilka", "finner", "antal", "ärenden", "kommuns", "johansson", "yrkar", "resultat", "särskilt", "närvarande", "justering", "kommunerna", "kommunal", "behöver", "län", "personer", "hos", "både", "nämnden", "avser", "angående", "genomföra", "området", "frågor", "organ", "inkommit", "lars", "eget","kring", "ges", "motion", "via", "dagens", "totalt", "justeringen", "därmed", "vice", "paragraf", "egen", "anta", "föreslå", "ingår", "justerat", "anser", "styrelsen", "kommunchef", "verksamheter", "åren", "tiden", "svar", "ann", "visar", "annan", "o", "större", "arbetsutskottets", "fastställa", "underlag", "möjligt", "kommande", "stora", "gälla", "fullmäktige", "dess", "ligger", "perioden", "anslaget", "framgår", "rapport", "flera", "stor", "vilken", "bättre", "inga", "anders", "yrkanden", "redan", "innan", "beredning", "året", "justerande", "nämnd", "därefter", "syftet", "görs", "endast", "tkr", "proposition", "områden", "nämnder", "komma","fler", "kap", "område", "tillägg", "dessutom", "t", "övrigt", "sammanträdet", "l", "beslutsunderlag", "f", "fall", "fortsatt", "motsvarande", "står", "uppdraget","övergripande", "uppdra", "jan","feb","mar","apr","jun","jul","aug","sep","okt","nov","dec", "upprättat", "larsson", "arbetsutskottet", "gemensam", "mindre","form", "skapa", "god", "synpunkter", "egna", "öka", "reservation", "tagit", "lämna", "ändring", "göras", "delegationsbeslut", "arbeta", "anses", "utreda", "minst", "båda", "andersson", "hösten", "deltar", "samtidigt", "dag", "justeringens", "ovan","lämnar","remiss","stort","utse","föreslagna", "minska","beräknas", "före", "krävs", "eriksson", "handlingarna", "revidering", "lämnas","lämnat", "viktigt", "uppgår", "ökad"]
+            }
+        }
+    }
+}
+
+{"""All documents from one file"""}
+XGET documents/info/_search
+{
+    "query": {
+        "term" : { "file" :  "Valdemarsvik/02d03544c9c6cdcf7d95411d5043a2dd.pdf" }
+    }
+}
+
+{"""Files missing a value"""}
+XGET files/info/_search
+{
+    "filter": {
+        "missing": { "field":  "storage_path" }
+    }
+}
+
+{"""All documents from a municipality"""}
+XGET documents/info/_search
+{
+    "query": {
+    "term": { "origin":  "Hammarö kommun" }
+    }
+}
