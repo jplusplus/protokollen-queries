@@ -89,6 +89,22 @@ XGET files/info/_search
     }
 }
 
+{"""List files ending in .html"""}
+XGET files/info/_search
+{
+    "size":1000,
+    "_source": {
+        "include": [ "_id" ]
+    },
+    "filter" : {
+        "query" : {
+            "wildcard": {
+               "_uid": "*.html"
+            }
+        }
+    }
+}
+
 {"""Downloads per filetype (working even for old files where filetype wasn't set)"""}
 XGET files/info/_search
 {
